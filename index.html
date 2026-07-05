@@ -105,14 +105,6 @@
               <label class="form-label small fw-bold">เบอร์โทรศัพท์ติดต่อ</label>
               <input type="tel" class="form-control" id="formTelephone" required placeholder="เช่น 0812345678">
             </div>
-            <div class="mb-3">
-              <label class="form-label small fw-bold">ที่อยู่จัดส่ง</label>
-              <textarea class="form-control" id="formAddress" rows="3" required placeholder="ระบุบ้านเลขที่ ซอย ถนน ตำบล อำเภอ จังหวัด"></textarea>
-            </div>
-            <div class="mb-3">
-              <label class="form-label small fw-bold text-danger"><i class="bi bi-image"></i> อัปโหลดรูปภาพสลิปโอนเงิน</label>
-              <input type="file" class="form-control" id="formImage" accept="image/*" required>
-            </div>
           </form>
         </div>
         <div class="modal-footer">
@@ -144,7 +136,6 @@
     window.addEventListener('DOMContentLoaded', () => {
       initLiff();
       loadProducts();
-      setupImageListener();
     });
 
     // เริ่มการเชื่อมต่อ LINE LIFF
@@ -310,27 +301,10 @@
       }
     }
 
-    // ================= IMAGE HANDLING & SUBMISSION =================
-    // ฟังการอัปโหลดไฟล์สลิปแล้วแปลงเป็น Base64
-    function setupImageListener() {
-      document.getElementById("formImage").addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        
-        const reader = new FileReader();
-        reader.onload = function(evt) {
-          base64ImageStr = evt.target.result; // จะได้ดาต้า String รูปแบบ data:image/jpeg;base64,...
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-
     // ยิง API โพสต์ข้อมูลทั้งหมดส่งไปยัง Google Apps Script 後台
     function submitOrder() {
       const name = document.getElementById("formName").value.trim();
       const tel = document.getElementById("formTelephone").value.trim();
-      const addr = document.getElementById("formAddress").value.trim();
-      const imgInput = document.getElementById("formImage");
 
       // ตรวจสอบความสมบูรณ์ของฟอร์ม
       if(!name || !tel || !addr || imgInput.files.length === 0) {
