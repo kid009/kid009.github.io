@@ -307,8 +307,8 @@
       const tel = document.getElementById("formTelephone").value.trim();
 
       // ตรวจสอบความสมบูรณ์ของฟอร์ม
-      if(!name || !tel || !addr || imgInput.files.length === 0) {
-        alert("กรุณากรอกข้อมูลส่วนตัวและอัปโหลดสลิปเงินโอนให้ครบถ้วนครับพี่กั๊ก");
+      if(!name || !tel) {
+        alert("กรุณากรอกชื่อและเบอร์โทรศัพท์");
         return;
       }
 
@@ -331,8 +331,6 @@
         lineUid: lineUserUid,
         name: name,
         telephone: tel,
-        address: addr,
-        image: base64ImageStr,
         orderDetails: orderDetailsArray
       };
 
