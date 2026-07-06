@@ -100,11 +100,7 @@
   <div class="container py-3 mb-5">
     <!-- Category Filter Bar -->
     <div class="d-flex gap-2 overflow-x-auto pb-3" id="categoryContainer">
-      <button class="btn btn-success category-btn flex-shrink-0" onclick="filterCategory('All')">ทั้งหมด</button>
-      <button class="btn btn-outline-success category-btn flex-shrink-0" onclick="filterCategory('Food')">อาหาร</button>
-      <button class="btn btn-outline-success category-btn flex-shrink-0" onclick="filterCategory('Desert')">ของหวาน</button>
-      <button class="btn btn-outline-success category-btn flex-shrink-0" onclick="filterCategory('Snack')">ของทานเล่น</button>
-      <button class="btn btn-outline-success category-btn flex-shrink-0" onclick="filterCategory('Drink')">เครื่องดื่ม</button>
+      <!-- ปุ่มหมวดหมู่จะถูกสร้างอัตโนมัติจากข้อมูลใน Google Sheet -->
     </div>
 
     <!-- Product Grid -->
@@ -178,7 +174,7 @@
   <script>
     // ================= CONFIGURATION =================
     const LIFF_ID = "2010571291-GEEyPihZ"; 
-    const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyg3QGRNkcXANO6VxKBsD-EdO3P-1-VvIK-2SH1zGjL96E-l21B0PziyqOKrNWXo_JO/exec"; 
+    const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxobrJ-ZAw8FDzDOQde2HlapZ7fyAwNqrV7aXqJPN3fBvvExG3988lv3Favb0fnklKu/exec"; 
     const OPEN_SHEET_URL = "https://opensheet.elk.sh/1fxZ0mnfOiWNMuWtpRzS7LMTeuvmzENK9xMidVBh7pUY/products"; 
 
     // ================= STATE MANAGEMENT =================
@@ -221,6 +217,7 @@
         .then(res => res.json())
         .then(data => {
           allProducts = data;
+          renderCategoryButtons();
           renderProducts(allProducts);
         })
         .catch(err => {
@@ -264,19 +261,55 @@
       });
     }
 
-    function filterCategory(categoryName) {
+    function renderCategoryButtons() {
+      const container = document.getElementById("categoryContainer");
+      container.innerHTML = "";
+
+      const allBtn = document.createElement("button");
+      allBtn.className = "btn btn-success category-btn flex-shrink-0";
+      allBtn.textContent = "ทั้งหมด";
+      allBtn.onclick = function () { filterCategory('All', this); };
+      container.appendChild(allBtn);
+
+      const seen = new Map();
+      allProducts.forEach(item => {
+        const raw = item["Category"] || item["หมวดหมู่"];
+        if (!raw) return;
+        const key = String(raw).trim().toLowerCase();
+        if (!key) return;
+        if (!seen.has(key)) {
+          seen.set(key, String(raw).trim());
+        }
+      });
+
+      const categories = Array.from(seen.values()).sort((a, b) => a.localeCompare(b, "th"));
+
+      categories.forEach(label => {
+        const btn = document.createElement("button");
+        btn.className = "btn btn-outline-success category-btn flex-shrink-0";
+        btn.textContent = label;
+        btn.dataset.category = label;
+        btn.onclick = function () { filterCategory(label, this); };
+        container.appendChild(btn);
+      });
+    }
+
+    function filterCategory(categoryName, clickedBtn) {
       const buttons = document.querySelectorAll('#categoryContainer button');
       buttons.forEach(btn => btn.classList.replace('btn-success', 'btn-outline-success'));
 
-      const activeBtn = event.currentTarget;
-      if (activeBtn) activeBtn.classList.replace('btn-outline-success', 'btn-success');
+      if (clickedBtn) clickedBtn.classList.replace('btn-outline-success', 'btn-success');
 
       if (categoryName === 'All') {
         document.getElementById("currentCategoryTitle").innerText = "เมนูทั้งหมด";
         renderProducts(allProducts);
       } else {
         document.getElementById("currentCategoryTitle").innerText = `หมวดหมู่: ${categoryName}`;
-        const filtered = allProducts.filter(p => p["Category"] === categoryName || p["หมวดหมู่"] === categoryName);
+        const target = String(categoryName).trim().toLowerCase();
+        const filtered = allProducts.filter(p => {
+          const cat = String(p["Category"] || p["หมวดหมู่"] || "").trim().toLowerCase();
+          return cat === target;
+        });
         renderProducts(filtered);
       }
     }
